@@ -6,7 +6,7 @@ pub struct ExtDeviceFamilies {
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_families_get(families_out: *mut *mut ExtDeviceFamilies, families_count_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_families_get(families_out: *mut *mut ExtDeviceFamilies, families_count_out: *mut usize) -> u32 {
     match probe_rs::config::families() {
         Ok(families) => {
             let families_count = families.len();
@@ -32,7 +32,7 @@ pub extern "C" fn lsprobe_families_get(families_out: *mut *mut ExtDeviceFamilies
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_families_get_variant_count(families: *const ExtDeviceFamilies, index: usize, variant_count_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_families_get_variant_count(families: *const ExtDeviceFamilies, index: usize, variant_count_out: *mut usize) -> u32 {
     if families.is_null() {
         return 1;
     }
@@ -53,7 +53,7 @@ pub extern "C" fn lsprobe_families_get_variant_count(families: *const ExtDeviceF
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_families_get_variant_name(families: *const ExtDeviceFamilies, index: usize, variant_index: usize, name_out: *mut *const u8, name_length_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_families_get_variant_name(families: *const ExtDeviceFamilies, index: usize, variant_index: usize, name_out: *mut *const u8, name_length_out: *mut usize) -> u32 {
     if families.is_null() {
         return 1;
     }
@@ -75,7 +75,7 @@ pub extern "C" fn lsprobe_families_get_variant_name(families: *const ExtDeviceFa
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_families_get_name(families: *const ExtDeviceFamilies, index: usize, name_out: *mut *const u8, name_length_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_families_get_name(families: *const ExtDeviceFamilies, index: usize, name_out: *mut *const u8, name_length_out: *mut usize) -> u32 {
     if families.is_null() {
         return 1;
     }
@@ -97,7 +97,7 @@ pub extern "C" fn lsprobe_families_get_name(families: *const ExtDeviceFamilies, 
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_families_destroy(families: *mut ExtDeviceFamilies) -> u32 {
+pub extern "C" fn psprobe_families_destroy(families: *mut ExtDeviceFamilies) -> u32 {
     if families.is_null() {
         return 1;
     }

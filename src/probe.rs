@@ -6,7 +6,7 @@ pub struct ExtProbeList {
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_get(probes_out: *mut *mut ExtProbeList) -> u32 {
+pub extern "C" fn psprobe_probe_list_get(probes_out: *mut *mut ExtProbeList) -> u32 {
     let probes = Probe::list_all();
 
     unsafe {
@@ -17,7 +17,7 @@ pub extern "C" fn lsprobe_probe_list_get(probes_out: *mut *mut ExtProbeList) -> 
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_get_count(probes: *mut ExtProbeList, size_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_probe_list_get_count(probes: *mut ExtProbeList, size_out: *mut usize) -> u32 {
     if probes.is_null() {
         return 1;
     }
@@ -32,7 +32,7 @@ pub extern "C" fn lsprobe_probe_list_get_count(probes: *mut ExtProbeList, size_o
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_get_name(probes: *mut ExtProbeList, index: usize, name_out: *mut *const u8, name_len_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_probe_list_get_name(probes: *mut ExtProbeList, index: usize, name_out: *mut *const u8, name_len_out: *mut usize) -> u32 {
     if probes.is_null() {
         return 1;
     }
@@ -54,7 +54,7 @@ pub extern "C" fn lsprobe_probe_list_get_name(probes: *mut ExtProbeList, index: 
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_get_vid_pid(probes: *mut ExtProbeList, index: usize, vid_out: *mut u16, pid_out: *mut u16) -> u32 {
+pub extern "C" fn psprobe_probe_list_get_vid_pid(probes: *mut ExtProbeList, index: usize, vid_out: *mut u16, pid_out: *mut u16) -> u32 {
     if probes.is_null() {
         return 1;
     }
@@ -76,7 +76,7 @@ pub extern "C" fn lsprobe_probe_list_get_vid_pid(probes: *mut ExtProbeList, inde
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_get_serial_number(probes: *mut ExtProbeList, index: usize, sn_out: *mut *const u8, sn_len_out: *mut usize) -> u32 {
+pub extern "C" fn psprobe_probe_list_get_serial_number(probes: *mut ExtProbeList, index: usize, sn_out: *mut *const u8, sn_len_out: *mut usize) -> u32 {
     if probes.is_null() {
         return 1;
     }
@@ -106,7 +106,7 @@ pub extern "C" fn lsprobe_probe_list_get_serial_number(probes: *mut ExtProbeList
 }
 
 #[no_mangle]
-pub extern "C" fn lsprobe_probe_list_destroy(probes: *mut ExtProbeList) -> u32 {
+pub extern "C" fn psprobe_probe_list_destroy(probes: *mut ExtProbeList) -> u32 {
     if probes.is_null() {
         return 1;
     }

@@ -4,26 +4,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef size_t lsprobe_status;
-lsprobe_status lsprobe_families_get(void **families, size_t *count);
-lsprobe_status lsprobe_families_get_name(void *family, size_t index,
+typedef size_t psprobe_status;
+psprobe_status psprobe_families_get(void **families, size_t *count);
+psprobe_status psprobe_families_get_name(void *family, size_t index,
                                          char **name, size_t *name_length);
-lsprobe_status lsprobe_families_get_variant_count(void *family, size_t index,
+psprobe_status psprobe_families_get_variant_count(void *family, size_t index,
                                                   size_t *variant_count);
-lsprobe_status lsprobe_families_get_variant_name(void *family, size_t index,
+psprobe_status psprobe_families_get_variant_name(void *family, size_t index,
                                                  size_t variant_index,
                                                  char **variant_name,
                                                  size_t *variant_name_length);
-lsprobe_status lsprobe_families_destroy(void *families);
+psprobe_status psprobe_families_destroy(void *families);
 
 int main() {
   void *families;
-  lsprobe_status status = 0;
+  psprobe_status status = 0;
 
   size_t families_size = 0;
-  status = lsprobe_families_get(&families, &families_size);
+  status = psprobe_families_get(&families, &families_size);
   printf(
-      "lsprobe_families_get: return %lx; families: %p, families_size: %ld;\n",
+      "psprobe_families_get: return %lx; families: %p, families_size: %ld;\n",
       status, families, families_size);
 
   char *name_buffer = malloc(32);
@@ -32,8 +32,8 @@ int main() {
     char *family_name;
     size_t name_length;
 
-    status = lsprobe_families_get_name(families, i, &family_name, &name_length);
-    printf("lsprobe_families_get_name: %lx; name: %p, length: %ld; ", status,
+    status = psprobe_families_get_name(families, i, &family_name, &name_length);
+    printf("psprobe_families_get_name: %lx; name: %p, length: %ld; ", status,
            family_name, name_length);
 
     if (family_name_buffer_size < name_length + 1) {
@@ -46,16 +46,16 @@ int main() {
 
     // Get variants names
     size_t variant_count;
-    status = lsprobe_families_get_variant_count(families, i, &variant_count);
-    printf("    lsprobe_families_get_variant_count: %lx; count: %ld;\n", status,
+    status = psprobe_families_get_variant_count(families, i, &variant_count);
+    printf("    psprobe_families_get_variant_count: %lx; count: %ld;\n", status,
            variant_count);
     for (size_t j = 0; j < variant_count; j++) {
       char *variant_name;
       size_t variant_name_length;
-      status = lsprobe_families_get_variant_name(families, i, j, &variant_name,
+      status = psprobe_families_get_variant_name(families, i, j, &variant_name,
                                                  &variant_name_length);
       printf(
-          "    lsprobe_families_get_variant_name: %lx; name: %p, length: %ld; ",
+          "    psprobe_families_get_variant_name: %lx; name: %p, length: %ld; ",
           status, variant_name, variant_name_length);
       if (family_name_buffer_size < variant_name_length + 1) {
         name_buffer = realloc(name_buffer, variant_name_length + 1);
@@ -69,8 +69,8 @@ int main() {
 
   free(name_buffer);
 
-  status = lsprobe_families_destroy(families);
-  printf("lsprobe_families_destroy: %lx;\n", status);
+  status = psprobe_families_destroy(families);
+  printf("psprobe_families_destroy: %lx;\n", status);
 
   return 0;
 }

@@ -4,8 +4,12 @@ pub struct ExtProbeList {
     probes: Vec<DebugProbeInfo>,
 }
 
+pub struct ExtProbeInfo {
+    pub probe: DebugProbeInfo,
+}
+
 pub struct ExtProbe {
-    probe: DebugProbeInfo,
+    pub probe: Probe,
 }
 
 #[no_mangle]
@@ -27,7 +31,7 @@ pub extern "C" fn psprobe_probe_list_get(
 pub extern "C" fn psprobe_probe_list_get_probe(
     probes: *mut ExtProbeList,
     index: usize,
-    probe_out: *mut *mut ExtProbe,
+    probe_out: *mut *mut ExtProbeInfo,
 ) -> u32 {
     if probes.is_null() {
         return 1;
@@ -40,7 +44,7 @@ pub extern "C" fn psprobe_probe_list_get_probe(
     }
 
     unsafe {
-        *probe_out = Box::into_raw(Box::new(ExtProbe {
+        *probe_out = Box::into_raw(Box::new(ExtProbeInfo {
             probe: probes.probes[index].clone(),
         }));
     }
@@ -61,7 +65,7 @@ pub extern "C" fn psprobe_probe_list_destroy(probes: *mut ExtProbeList) -> u32 {
 
 #[no_mangle]
 pub extern "C" fn psprobe_probe_get_name(
-    probe: *mut ExtProbe,
+    probe: *mut ExtProbeInfo,
     name_out: *mut *const u8,
     name_len_out: *mut usize,
 ) -> u32 {
@@ -81,7 +85,7 @@ pub extern "C" fn psprobe_probe_get_name(
 
 #[no_mangle]
 pub extern "C" fn psprobe_probe_get_vid_pid(
-    probe: *mut ExtProbe,
+    probe: *mut ExtProbeInfo,
     vid_out: *mut u16,
     pid_out: *mut u16,
 ) -> u32 {
@@ -101,7 +105,7 @@ pub extern "C" fn psprobe_probe_get_vid_pid(
 
 #[no_mangle]
 pub extern "C" fn psprobe_probe_get_serial_number(
-    probe: *mut ExtProbe,
+    probe: *mut ExtProbeInfo,
     sn_out: *mut *const u8,
     sn_len_out: *mut usize,
 ) -> u32 {
@@ -128,7 +132,7 @@ pub extern "C" fn psprobe_probe_get_serial_number(
 }
 
 #[no_mangle]
-pub extern "C" fn psprobe_probe_destroy(probe: *mut ExtProbe) -> u32 {
+pub extern "C" fn psprobe_probe_destroy(probe: *mut ExtProbeInfo) -> u32 {
     if probe.is_null() {
         return 1;
     }
@@ -137,3 +141,60 @@ pub extern "C" fn psprobe_probe_destroy(probe: *mut ExtProbe) -> u32 {
 
     0
 }
+
+#[no_mangle]
+pub extern "C" fn psprobe_probe_open(
+    probe_info: *mut ExtProbeInfo,
+    probe_out: *mut *mut ExtProbe,
+) -> u32 {
+    if probe_info.is_null() {
+        return 1;
+    }
+
+    let probe_info = unsafe { &*probe_info };
+    let probe = match probe_info.probe.open() {
+        Ok(probe) => probe,
+        Err(_) => return 2,
+    };
+
+    unsafe { *probe_out = Box::into_raw(Box::new(ExtProbe { probe })) }
+
+    0
+}
+
+#[no_mangle]
+pub extern "C" fn psprobe_probe_set_connection_speed(probe: *mut ExtProbe, speed: u32) -> u32 {
+    if probe.is_null() {
+        return 1;
+    }
+
+    let probe = unsafe { &mut (*probe).probe };
+    match probe.set_speed(speed) {
+        Ok(_) => 0,
+        Err(_) => 2,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn psprobe_probe_get_connection_speed(probe: *mut ExtProbe, speed_out: *mut u32) -> u32 {
+    if probe.is_null() || speed_out.is_null() {
+        return 1;
+    };
+
+    let probe = unsafe { &(*probe).probe };
+    unsafe { *speed_out = probe.speed_khz() };
+
+    0
+}
+
+#[no_mangle]
+pub extern "C" fn psprobe_probe_close(probe: *mut ExtProbe) -> u32 {
+    if probe.is_null() {
+        return 1;
+    }
+
+    let _ = unsafe { Box::from_raw(probe) };
+
+    0
+}
+

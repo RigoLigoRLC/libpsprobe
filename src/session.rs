@@ -1,6 +1,6 @@
 use crate::bridge::ExtDynStr;
 use crate::probe::ExtProbe;
-use probe_rs::{CoreType, Permissions, Session};
+use probe_rs::{CoreType, MemoryInterface, Permissions, Session};
 
 pub struct ExtSession {
     session: Session,
@@ -21,9 +21,10 @@ pub fn psprobe_session_open(
         return 1;
     }
 
-    // Converting a probe to a session is a move, we will recycle this "probe"
-    // Remember to clean up in C++ part
-    let ext_probe = unsafe { Box::from_raw(probe) };
+    // Converting a probe to a session is a move, this "probe" will have to be dropped here
+    // Remember to clean up in C++ part, and get a new probe object
+    let mut ext_probe = unsafe { Box::from_raw(probe) };
+    ext_probe.dropped = true;
 
     let probe = ext_probe.probe;
     let name = match unsafe { std::str::from_utf8(std::slice::from_raw_parts(device_name, device_name_len)) } {
@@ -98,4 +99,60 @@ pub fn psprobe_core_info_destroy(core_info: *mut ExtCoreInfo) -> u32 {
     let _ = unsafe { Box::from_raw(core_info) };
 
     0
+}
+
+#[no_mangle]
+pub fn psprobe_session_read_memory_8(session: *mut ExtSession, core: usize, address: u64, size: usize, dest: *mut u8) -> u32 {
+    if session.is_null() {
+        return 1;
+    }
+
+    match unsafe {
+        (*session).session.core(core).unwrap().read_8(address, std::slice::from_raw_parts_mut(dest, size))
+    } {
+        Ok(_) => 0,
+        Err(_) => 2
+    }
+}
+
+#[no_mangle]
+pub fn psprobe_session_read_memory_16(session: *mut ExtSession, core: usize, address: u64, size: usize, dest: *mut u8) -> u32 {
+    if session.is_null() {
+        return 1;
+    }
+
+    match unsafe {
+        (*session).session.core(core).unwrap().read_8(address, std::slice::from_raw_parts_mut(dest, size * 2))
+    } {
+        Ok(_) => 0,
+        Err(_) => 2
+    }
+}
+
+#[no_mangle]
+pub fn psprobe_session_read_memory_32(session: *mut ExtSession, core: usize, address: u64, size: usize, dest: *mut u32) -> u32 {
+    if session.is_null() {
+        return 1;
+    }
+
+    match unsafe {
+        (*session).session.core(core).unwrap().read_32(address, std::slice::from_raw_parts_mut(dest, size))
+    } {
+        Ok(_) => 0,
+        Err(_) => 2
+    }
+}
+
+#[no_mangle]
+pub fn psprobe_session_read_memory_64(session: *mut ExtSession, core: usize, address: u64, size: usize, dest: *mut u64) -> u32 {
+    if session.is_null() {
+        return 1;
+    }
+
+    match unsafe {
+        (*session).session.core(core).unwrap().read_64(address, std::slice::from_raw_parts_mut(dest, size))
+    } {
+        Ok(_) => 0,
+        Err(_) => 2
+    }
 }

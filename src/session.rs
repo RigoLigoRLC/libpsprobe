@@ -1,9 +1,10 @@
 use crate::bridge::ExtDynStr;
 use crate::probe::ExtProbe;
-use probe_rs::{CoreType, MemoryInterface, Permissions, Session};
+use probe_rs::{CoreType, Error, MemoryInterface, Permissions, Session};
 
 pub struct ExtSession {
     session: Session,
+    error: Option<Error>,
 }
 
 pub struct ExtCoreInfo {
@@ -37,7 +38,7 @@ pub fn psprobe_session_open(
         Err(_) => return 3,
     };
 
-    unsafe { *session_out = Box::into_raw(Box::new(ExtSession { session })); }
+    unsafe { *session_out = Box::into_raw(Box::new(ExtSession { session, error: None })); }
 
     0
 }
@@ -111,7 +112,10 @@ pub fn psprobe_session_read_memory_8(session: *mut ExtSession, core: usize, addr
         (*session).session.core(core).unwrap().read_8(address, std::slice::from_raw_parts_mut(dest, size))
     } {
         Ok(_) => 0,
-        Err(_) => 2
+        Err(e) => {
+            unsafe { (*session).error = Some(e); }
+            2
+        }
     }
 }
 
@@ -125,7 +129,10 @@ pub fn psprobe_session_read_memory_16(session: *mut ExtSession, core: usize, add
         (*session).session.core(core).unwrap().read_8(address, std::slice::from_raw_parts_mut(dest, size * 2))
     } {
         Ok(_) => 0,
-        Err(_) => 2
+        Err(e) => {
+            unsafe { (*session).error = Some(e); }
+            2
+        }
     }
 }
 
@@ -139,7 +146,10 @@ pub fn psprobe_session_read_memory_32(session: *mut ExtSession, core: usize, add
         (*session).session.core(core).unwrap().read_32(address, std::slice::from_raw_parts_mut(dest, size))
     } {
         Ok(_) => 0,
-        Err(_) => 2
+        Err(e) => {
+            unsafe { (*session).error = Some(e); }
+            2
+        }
     }
 }
 
@@ -153,6 +163,9 @@ pub fn psprobe_session_read_memory_64(session: *mut ExtSession, core: usize, add
         (*session).session.core(core).unwrap().read_64(address, std::slice::from_raw_parts_mut(dest, size))
     } {
         Ok(_) => 0,
-        Err(_) => 2
+        Err(e) => {
+            unsafe { (*session).error = Some(e); }
+            2
+        }
     }
 }

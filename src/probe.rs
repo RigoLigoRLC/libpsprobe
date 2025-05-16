@@ -1,5 +1,4 @@
-use probe_rs::probe::list::Lister;
-use probe_rs::probe::{DebugProbeInfo, Probe, WireProtocol};
+use probe_rs::{DebugProbeInfo, Probe, WireProtocol};
 
 pub struct ExtProbeList {
     probes: Vec<DebugProbeInfo>,
@@ -19,7 +18,7 @@ pub extern "C" fn psprobe_probe_list_get(
     probes_out: *mut *mut ExtProbeList,
     size_out: *mut usize,
 ) -> u32 {
-    let probes = Lister::new().list_all();
+    let probes = Probe::list_all();
 
     unsafe {
         *size_out = probes.len();

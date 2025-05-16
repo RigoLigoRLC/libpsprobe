@@ -1,22 +1,34 @@
+
 use probe_rs::config::ChipFamily;
 
 pub struct ExtDeviceFamilies {
-    families: Vec<ChipFamily>,
+    families: Vec<ChipFamily>
 }
 
 #[no_mangle]
 pub extern "C" fn psprobe_families_get(families_out: *mut *mut ExtDeviceFamilies, families_count_out: *mut usize) -> u32 {
-    let families = probe_rs::config::families();
+    match probe_rs::config::families() {
+        Ok(families) => {
+            let families_count = families.len();
+            let boxed_families = Box::new(ExtDeviceFamilies { families });
 
-    let families_count = families.len();
-    let boxed_families = Box::new(ExtDeviceFamilies { families });
+            unsafe {
+                *families_count_out = families_count;
+                *families_out = Box::into_raw(boxed_families);
+            }
 
-    unsafe {
-        *families_count_out = families_count;
-        *families_out = Box::into_raw(boxed_families);
+            0
+        }
+
+        Err(_) => {
+            unsafe {
+                *families_count_out = 0;
+                *families_out = std::ptr::null_mut();
+            }
+
+            1
+        }
     }
-
-    0
 }
 
 #[no_mangle]
@@ -25,7 +37,7 @@ pub extern "C" fn psprobe_families_get_variant_count(families: *const ExtDeviceF
         return 1;
     }
 
-    let families = unsafe { &*families };
+    let families = unsafe { &* families };
 
     if index >= families.families.len() {
         return 1;
